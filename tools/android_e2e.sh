@@ -11,10 +11,11 @@ adb install -r -g "$APK"
 adb logcat -c || true
 adb forward tcp:47800 tcp:47800
 adb forward tcp:47801 tcp:47801
+# The app reaches the fake Mac's pairing port through adb reverse (127.0.0.1 inside the emulator).
+adb reverse tcp:47805 tcp:47805
 
 rm -f /tmp/qr.json
-# 10.0.2.2 is the host machine as seen from the emulator.
-$PY tools/fake_mac.py --qr-host 10.0.2.2 --phone-host 127.0.0.1 --qr-out /tmp/qr.json --timeout 120 > /tmp/fake_mac.log 2>&1 &
+$PY tools/fake_mac.py --qr-host 127.0.0.1 --phone-host 127.0.0.1 --qr-out /tmp/qr.json --timeout 120 > /tmp/fake_mac.log 2>&1 &
 MAC_PID=$!
 for i in $(seq 1 30); do [ -s /tmp/qr.json ] && break; sleep 1; done
 QR64=$(base64 -w0 < /tmp/qr.json)
