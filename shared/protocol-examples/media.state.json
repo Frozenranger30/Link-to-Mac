@@ -1,0 +1,13 @@
+{
+  "id": "00000000-0000-4000-8000-000000000047",
+  "type": "media.state",
+  "ts": 1731137870000,
+  "body": {
+    "active": true,
+    "playing": true,
+    "title": "Song",
+    "artist": "Band",
+    "app": "com.spotify.music",
+    "appName": "Spotify"
+  }
+}

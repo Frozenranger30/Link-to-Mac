@@ -1,0 +1,25 @@
+{
+  "id": "00000000-0000-4000-8000-000000000011",
+  "type": "notification.posted",
+  "ts": 1731137870000,
+  "body": {
+    "key": "0|com.whatsapp|1|null|10123",
+    "app": "com.whatsapp",
+    "appName": "WhatsApp",
+    "appIconPng": "iVBORw0KGgo=",
+    "title": "Anna",
+    "text": "Kommst du heute noch?",
+    "time": 1731137870000,
+    "actions": [
+      {
+        "title": "Antworten",
+        "isReply": true
+      },
+      {
+        "title": "Als gelesen markieren",
+        "isReply": false
+      }
+    ],
+    "canReply": true
+  }
+}

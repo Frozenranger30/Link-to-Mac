@@ -23,7 +23,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild -project LinkToMac.xcodeproj -scheme LinkToMac \
-            -configuration Debug -derivedDataPath build-test \
+            -configuration Debug -derivedDataPath build-test -destination 'platform=macOS' \
             CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO test | tee test.log | grep -E "error:|Test Case|TEST" || true
           grep -q "TEST SUCCEEDED" test.log
       - name: Zip app

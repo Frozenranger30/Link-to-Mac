@@ -1,0 +1,8 @@
+{
+  "pairToken": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+  "certFingerprint": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+  "keyFingerprint": "3f4a000000000000000000000000000000000000000000000000000000000000",
+  "proof": "FMMO7iM6Qtd3nj6h+1bkezEaY5g74xeND9/xsLtapSk=",
+  "authMessageChallenge": "q83vEjRWeJASNFZ4kBI0VniQEjRWeJASNFZ4kBI0Vng=",
+  "authMessage": "linktomac-auth|q83vEjRWeJASNFZ4kBI0VniQEjRWeJASNFZ4kBI0Vng=|a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"
+}

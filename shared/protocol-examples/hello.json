@@ -1,0 +1,17 @@
+{
+  "id": "00000000-0000-4000-8000-000000000000",
+  "type": "hello",
+  "ts": 1731137870000,
+  "body": {
+    "deviceName": "Galaxy S24",
+    "model": "SM-S921B",
+    "appVersion": "1.0.0",
+    "protocolVersion": 1,
+    "capabilities": [
+      "status",
+      "notifications",
+      "sms"
+    ],
+    "challenge": "q83vEjRWeJASNFZ4kBI0VniQEjRWeJASNFZ4kBI0Vng="
+  }
+}

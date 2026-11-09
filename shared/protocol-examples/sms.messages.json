@@ -1,0 +1,29 @@
+{
+  "id": "00000000-0000-4000-8000-000000000018",
+  "type": "sms.messages",
+  "ts": 1731137870000,
+  "body": {
+    "threadId": 12,
+    "messages": [
+      {
+        "id": 501,
+        "threadId": 12,
+        "address": "+491701234567",
+        "body": "Hallo!",
+        "date": 1731137800000,
+        "outgoing": false,
+        "read": true
+      },
+      {
+        "id": 502,
+        "threadId": 12,
+        "address": "+491701234567",
+        "body": "Hi Anna",
+        "date": 1731137860000,
+        "outgoing": true,
+        "read": true
+      }
+    ]
+  },
+  "replyTo": "00000000-0000-4000-8000-999999999999"
+}

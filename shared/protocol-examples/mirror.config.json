@@ -1,0 +1,11 @@
+{
+  "id": "00000000-0000-4000-8000-000000000040",
+  "type": "mirror.config",
+  "ts": 1731137870000,
+  "body": {
+    "width": 576,
+    "height": 1280,
+    "sps": "Z0LAKY1oBQBbkA==",
+    "pps": "aM4BqDXI"
+  }
+}

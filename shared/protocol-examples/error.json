@@ -1,0 +1,9 @@
+{
+  "id": "00000000-0000-4000-8000-000000000049",
+  "type": "error",
+  "ts": 1731137870000,
+  "body": {
+    "code": "permission_denied",
+    "message": "Berechtigung „SMS lesen“ fehlt auf dem Handy"
+  }
+}

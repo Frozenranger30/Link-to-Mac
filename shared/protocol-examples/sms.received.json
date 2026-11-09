@@ -1,0 +1,17 @@
+{
+  "id": "00000000-0000-4000-8000-000000000019",
+  "type": "sms.received",
+  "ts": 1731137870000,
+  "body": {
+    "message": {
+      "id": 503,
+      "threadId": 12,
+      "address": "+491701234567",
+      "body": "Dein Code lautet 482913",
+      "date": 1731137870000,
+      "outgoing": false,
+      "read": false
+    },
+    "contactName": "Anna"
+  }
+}

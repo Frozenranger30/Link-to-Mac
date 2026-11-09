@@ -1,0 +1,14 @@
+{
+  "id": "00000000-0000-4000-8000-000000000009",
+  "type": "status.update",
+  "ts": 1731137870000,
+  "body": {
+    "battery": 82,
+    "charging": true,
+    "wifiSignal": 3,
+    "network": "wifi",
+    "cellSignal": 4,
+    "dnd": false,
+    "carrier": "Telekom"
+  }
+}
