@@ -125,7 +125,9 @@ struct PairingView: View {
             }
             TimelineView(.periodic(from: .now, by: 1)) { ctx in
                 let left = max(0, Int(pairing.expiresAt.timeIntervalSince(ctx.date)))
-                Text("Gültig für \(left / 60):\(String(format: "%02d", left % 60)) min · \(pairing.hosts.joined(separator: ", "))")
+                let time = String(format: "%d:%02d", left / 60, left % 60)
+                let hosts = pairing.hosts.joined(separator: ", ")
+                Text("Gültig für \(time) min · \(hosts)")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if let err = pairing.errorMessage {
