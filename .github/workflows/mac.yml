@@ -1,0 +1,34 @@
+name: Build Mac App
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        working-directory: mac
+        run: xcodegen generate
+      - name: Build
+        working-directory: mac
+        run: |
+          set -o pipefail
+          xcodebuild -project LinkToMac.xcodeproj -scheme LinkToMac \
+            -configuration Release -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO build | tee build.log | grep -E "error:|warning: unre|BUILD" || true
+          grep -q "BUILD SUCCEEDED" build.log
+      - name: Unit tests
+        working-directory: mac
+        run: |
+          set -o pipefail
+          xcodebuild -project LinkToMac.xcodeproj -scheme LinkToMac \
+            -configuration Debug -derivedDataPath build-test \
+            CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=NO test | tee test.log | grep -E "error:|Test Case|TEST" || true
+          grep -q "TEST SUCCEEDED" test.log
+      - name: Zip app
+        run: cd mac/build/Build/Products/Release && ditto -c -k --sequesterRsrc --keepParent LinkToMac.app LinkToMac.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LinkToMac-macOS
+          path: mac/build/Build/Products/Release/LinkToMac.zip
