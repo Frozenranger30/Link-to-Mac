@@ -21,10 +21,18 @@ class FindPhone(private val context: Context) {
     private var player: MediaPlayer? = null
     private var previousVolume = -1
     private val handler = Handler(Looper.getMainLooper())
-    private val stopRunnable = Runnable { stop() }
+    private val stopRunnable = Runnable { stopRinging() }
 
-    fun ring() = handler.post {
-        if (player != null) return@post
+    fun ring() {
+        handler.post { startRinging() }
+    }
+
+    fun stop() {
+        handler.post { stopRinging() }
+    }
+
+    private fun startRinging() {
+        if (player != null) return
         val audio = context.getSystemService(AudioManager::class.java)
         previousVolume = audio.getStreamVolume(AudioManager.STREAM_ALARM)
         try {
@@ -71,7 +79,7 @@ class FindPhone(private val context: Context) {
         handler.postDelayed(stopRunnable, 45_000)
     }
 
-    fun stop() = handler.post {
+    private fun stopRinging() {
         handler.removeCallbacks(stopRunnable)
         player?.let {
             try {

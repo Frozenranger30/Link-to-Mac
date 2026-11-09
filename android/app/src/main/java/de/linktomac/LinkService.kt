@@ -398,8 +398,12 @@ class LinkService : Service(), ControlConnection.Listener {
             setAttribute("v", "1")
         }
         val listener = object : NsdManager.RegistrationListener {
-            override fun onServiceRegistered(info: NsdServiceInfo) = Log.i(TAG, "mDNS registered: ${info.serviceName}")
-            override fun onRegistrationFailed(info: NsdServiceInfo, code: Int) = Log.w(TAG, "mDNS failed: $code")
+            override fun onServiceRegistered(info: NsdServiceInfo) {
+                Log.i(TAG, "mDNS registered: ${info.serviceName}")
+            }
+            override fun onRegistrationFailed(info: NsdServiceInfo, code: Int) {
+                Log.w(TAG, "mDNS failed: $code")
+            }
             override fun onServiceUnregistered(info: NsdServiceInfo) = Unit
             override fun onUnregistrationFailed(info: NsdServiceInfo, code: Int) = Unit
         }
