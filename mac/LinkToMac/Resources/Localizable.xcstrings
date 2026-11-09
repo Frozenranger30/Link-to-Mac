@@ -591,6 +591,16 @@
         }
       }
     },
+    "Für Tests mit dem Fake-Handy (tools/fake_phone.py)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For testing with the fake phone (tools/fake_phone.py)"
+          }
+        }
+      }
+    },
     "Gekoppelt mit": {
       "localizations": {
         "en": {
@@ -1137,6 +1147,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Folders cannot be sent"
+          }
+        }
+      }
+    },
+    "QR-Inhalt kopieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy QR content"
           }
         }
       }

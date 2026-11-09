@@ -297,6 +297,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--qr-port", type=int, default=47899)
     ap.add_argument("--qr", help="QR JSON to pair with immediately")
+    ap.add_argument("--clipboard", action="store_true",
+                    help="read the QR JSON from the macOS clipboard (Mac app: 'QR-Inhalt kopieren')")
     args = ap.parse_args()
     tmp = tempfile.mkdtemp()
     cert_pem, key_pem, fp = make_cert(tmp)
@@ -307,6 +309,11 @@ def main():
     threading.Thread(target=tls_server, args=(47800, ctx, lambda c: handle_control(c, fp)), daemon=True).start()
     threading.Thread(target=tls_server, args=(47801, ctx, handle_data), daemon=True).start()
     threading.Thread(target=qr_helper, args=(fp, args.qr_port), daemon=True).start()
+    if args.clipboard:
+        args.qr = subprocess.run(["pbpaste"], capture_output=True, text=True).stdout.strip()
+        if not args.qr.startswith("{"):
+            log("clipboard does not contain the QR JSON - click 'QR-Inhalt kopieren' in the Mac app first")
+            return 1
     if args.qr:
         threading.Thread(target=pair, args=(json.loads(args.qr), fp), daemon=True).start()
     log("ready")

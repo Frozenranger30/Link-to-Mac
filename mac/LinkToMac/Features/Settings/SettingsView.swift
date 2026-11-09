@@ -136,6 +136,12 @@ struct PairingView: View {
             Text("Handy und Mac müssen im selben WLAN sein.").font(.caption).foregroundStyle(.secondary)
             HStack {
                 Button("Neuer Code") { pairing.regenerate() }
+                Button("QR-Inhalt kopieren") {
+                    // For testing with tools/fake_phone.py --clipboard
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(pairing.qrJSON ?? "", forType: .string)
+                }
+                .help(String(localized: "Für Tests mit dem Fake-Handy (tools/fake_phone.py)"))
                 Spacer()
                 Button("Schließen") { dismiss() }.keyboardShortcut(.cancelAction)
             }
