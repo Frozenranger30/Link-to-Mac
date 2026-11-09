@@ -111,6 +111,15 @@ class LinkService : Service(), ControlConnection.Listener {
         files = FileBridge(this)
         media = MediaBridge(this).also { it.start() }
         find = FindPhone(this)
+        // Some vendors (e.g. Samsung) unbind notification listeners in the background.
+        if (NotifListener.instance == null && de.linktomac.ui.PermissionCatalog.notificationAccess(this)) {
+            try {
+                android.service.notification.NotificationListenerService.requestRebind(
+                    android.content.ComponentName(this, NotifListener::class.java),
+                )
+            } catch (_: Exception) {
+            }
+        }
 
         @Suppress("DEPRECATION")
         wifiLock = getSystemService(WifiManager::class.java)
