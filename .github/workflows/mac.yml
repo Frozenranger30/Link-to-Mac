@@ -3,6 +3,7 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: macos-15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen
@@ -20,9 +21,8 @@ jobs:
           grep -q "BUILD SUCCEEDED" build.log
       - name: Start fake phone for end-to-end test
         run: |
-          python3 -m venv /tmp/venv
-          /tmp/venv/bin/pip install --quiet cryptography
-          nohup /tmp/venv/bin/python tools/fake_phone.py > fake_phone.log 2>&1 &
+          # Uses the openssl CLI (no pip packages needed).
+          nohup python3 tools/fake_phone.py > fake_phone.log 2>&1 < /dev/null &
           sleep 3
           cat fake_phone.log
       - name: Unit + end-to-end tests

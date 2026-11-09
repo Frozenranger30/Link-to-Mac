@@ -8,7 +8,7 @@ It implements the phone side of docs/PROTOCOL.md:
   * auth: verifies the Mac's ECDSA signature with the key received in pair.accept
   * answers a few requests with the examples from shared/protocol-examples
 
-Requires: pip install cryptography
+Uses the `cryptography` package when installed, otherwise the `openssl` command line tool.
 """
 import argparse
 import base64
@@ -17,7 +17,9 @@ import hashlib
 import hmac
 import json
 import os
+import shutil
 import socket
+import subprocess
 import ssl
 import struct
 import sys
@@ -26,10 +28,14 @@ import threading
 import time
 import uuid
 
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.x509.oid import NameOID
+try:
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.x509.oid import NameOID
+    HAVE_CRYPTOGRAPHY = True
+except ImportError:  # fall back to the openssl CLI
+    HAVE_CRYPTOGRAPHY = False
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EXAMPLES = os.path.join(HERE, "..", "shared", "protocol-examples")
@@ -46,20 +52,53 @@ def log(*a):
 
 
 def make_cert(tmp):
-    key = ec.generate_private_key(ec.SECP256R1())
-    name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "LinkToMac Fake Phone")])
-    now = datetime.datetime.now(datetime.timezone.utc)
-    cert = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(key.public_key())
-            .serial_number(x509.random_serial_number()).not_valid_before(now - datetime.timedelta(days=1))
-            .not_valid_after(now + datetime.timedelta(days=365)).sign(key, hashes.SHA256()))
     cert_pem = os.path.join(tmp, "cert.pem")
     key_pem = os.path.join(tmp, "key.pem")
-    with open(cert_pem, "wb") as f:
-        f.write(cert.public_bytes(serialization.Encoding.PEM))
-    with open(key_pem, "wb") as f:
-        f.write(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
-    fp = hashlib.sha256(cert.public_bytes(serialization.Encoding.DER)).hexdigest()
-    return cert_pem, key_pem, fp
+    if HAVE_CRYPTOGRAPHY:
+        key = ec.generate_private_key(ec.SECP256R1())
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "LinkToMac Fake Phone")])
+        now = datetime.datetime.now(datetime.timezone.utc)
+        cert = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(key.public_key())
+                .serial_number(x509.random_serial_number()).not_valid_before(now - datetime.timedelta(days=1))
+                .not_valid_after(now + datetime.timedelta(days=365)).sign(key, hashes.SHA256()))
+        with open(cert_pem, "wb") as f:
+            f.write(cert.public_bytes(serialization.Encoding.PEM))
+        with open(key_pem, "wb") as f:
+            f.write(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
+    else:
+        openssl = shutil.which("openssl") or "/usr/bin/openssl"
+        subprocess.run([openssl, "ecparam", "-name", "prime256v1", "-genkey", "-noout", "-out", key_pem], check=True)
+        subprocess.run([openssl, "req", "-new", "-x509", "-key", key_pem, "-out", cert_pem, "-days", "365",
+                        "-subj", "/CN=LinkToMac Fake Phone"], check=True)
+    with open(cert_pem) as f:
+        der = ssl.PEM_cert_to_DER_cert(f.read())
+    return cert_pem, key_pem, hashlib.sha256(der).hexdigest()
+
+
+def verify_signature(pub_der, signature, message):
+    """ECDSA P-256 / SHA-256 verification of a DER signature."""
+    if HAVE_CRYPTOGRAPHY:
+        try:
+            serialization.load_der_public_key(pub_der).verify(signature, message, ec.ECDSA(hashes.SHA256()))
+            return True
+        except Exception as e:  # noqa: BLE001
+            log("signature invalid:", e)
+            return False
+    tmp = tempfile.mkdtemp()
+    paths = {n: os.path.join(tmp, n) for n in ("pub.pem", "sig.der", "msg.bin")}
+    b64 = base64.encodebytes(pub_der).decode()
+    with open(paths["pub.pem"], "w") as f:
+        f.write("-----BEGIN PUBLIC KEY-----\n" + b64 + "-----END PUBLIC KEY-----\n")
+    with open(paths["sig.der"], "wb") as f:
+        f.write(signature)
+    with open(paths["msg.bin"], "wb") as f:
+        f.write(message)
+    openssl = shutil.which("openssl") or "/usr/bin/openssl"
+    r = subprocess.run([openssl, "dgst", "-sha256", "-verify", paths["pub.pem"], "-signature", paths["sig.der"], paths["msg.bin"]],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        log("signature invalid:", r.stdout, r.stderr)
+    return r.returncode == 0
 
 
 def read_exact(sock, n):
@@ -119,7 +158,7 @@ def pair(qr, cert_fp):
                 if hashlib.sha256(key_der).hexdigest() != qr["keyFingerprint"]:
                     log("PAIRING KEY MISMATCH")
                     return
-                state["mac_key"] = serialization.load_der_public_key(key_der)
+                state["mac_key"] = key_der
                 state["mac_key_fp"] = qr["keyFingerprint"]
                 log("paired with", reply["body"]["macName"])
                 return
@@ -169,12 +208,8 @@ def handle_control(conn, cert_fp):
                 ok = False
                 key = state["mac_key"]
                 if key is not None and msg["body"]["keyFingerprint"] == state["mac_key_fp"]:
-                    try:
-                        key.verify(base64.b64decode(msg["body"]["signature"]),
-                                   f"linktomac-auth|{challenge}|{cert_fp}".encode(), ec.ECDSA(hashes.SHA256()))
-                        ok = True
-                    except Exception as e:  # noqa: BLE001
-                        log("signature invalid:", e)
+                    ok = verify_signature(key, base64.b64decode(msg["body"]["signature"]),
+                                          f"linktomac-auth|{challenge}|{cert_fp}".encode())
                 if not ok:
                     log("AUTH FAILED")
                     write_frame(conn, env("error", {"code": "unauthorized", "message": "unknown mac"}))
