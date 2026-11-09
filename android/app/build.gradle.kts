@@ -21,6 +21,12 @@ android {
         release {
             isMinifyEnabled = false
         }
+        // Only for the automated emulator test (tools/android_e2e.sh): adds an exported
+        // activity that pairs from a QR payload passed via adb. Never install this variant.
+        create("e2e") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

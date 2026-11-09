@@ -16,6 +16,8 @@ final class PairingService: ObservableObject {
     static let tokenLifetime: TimeInterval = 5 * 60
 
     @Published private(set) var qrImage: NSImage?
+    /// The JSON encoded in the QR code (also used by the end-to-end test).
+    private(set) var qrJSON: String?
     @Published private(set) var hosts: [String] = []
     @Published private(set) var expiresAt = Date()
     @Published var pending: PendingRequest?
@@ -71,6 +73,7 @@ final class PairingService: ObservableObject {
             pairToken: token.base64EncodedString()
         )
         if let json = try? JSONEncoder().encode(qr) {
+            qrJSON = String(data: json, encoding: .utf8)
             qrImage = Self.makeQR(json)
         }
         if hosts.isEmpty {
