@@ -49,10 +49,17 @@ final class DataChannel {
 
         func receiveChunk() {
             connection.receive(minimumIncompleteLength: 1, maximumLength: 512 * 1024) { [weak self] data, _, isComplete, error in
-                guard let self else { return }
+                guard let self, !self.finished else { return }
                 if let data, !data.isEmpty {
                     let take = data.prefix(Int(min(Int64(data.count), size - received)))
-                    handle.write(take)
+                    do {
+                        try handle.write(contentsOf: take)
+                    } catch {
+                        try? handle.close()
+                        self.connection.cancel()
+                        self.finish(completion, .failure(error))
+                        return
+                    }
                     hasher.update(data: take)
                     received += Int64(take.count)
                     if Date().timeIntervalSince(lastReport) > 0.2 || received == size {
@@ -84,9 +91,11 @@ final class DataChannel {
             guard let self else { return }
             switch state {
             case .ready:
+                guard !self.finished else { return }
                 self.sendHeader(ChannelHeader(sessionToken: token, transferId: transferId, direction: "download"))
                 if size == 0 { self.complete(handle, &hasher, sha256, completion) } else { receiveChunk() }
             case let .failed(error), let .waiting(error):
+                guard !self.finished else { return }
                 try? handle.close()
                 self.connection.cancel()
                 self.finish(completion, .failure(error))
@@ -116,7 +125,15 @@ final class DataChannel {
         var lastReport = Date.distantPast
 
         func sendNext() {
-            let chunk = handle.readData(ofLength: 64 * 1024)
+            guard !finished else { return }
+            let chunk: Data
+            do {
+                chunk = try handle.read(upToCount: 64 * 1024) ?? Data()
+            } catch {
+                try? handle.close()
+                finish(completion, .failure(error))
+                return
+            }
             if chunk.isEmpty {
                 try? handle.close()
                 let s = sent
@@ -148,6 +165,7 @@ final class DataChannel {
                 self.sendHeader(ChannelHeader(sessionToken: token, transferId: transferId, direction: "upload"))
                 sendNext()
             case let .failed(error), let .waiting(error):
+                guard !self.finished else { return }
                 try? handle.close()
                 self.connection.cancel()
                 self.finish(completion, .failure(error))

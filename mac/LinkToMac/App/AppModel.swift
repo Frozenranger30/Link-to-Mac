@@ -74,6 +74,9 @@ final class AppModel: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
         if let window = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }) {
             window.makeKeyAndOrderFront(nil)
+        } else {
+            // No window open: a "reopen" makes SwiftUI create a new main window.
+            NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: NSWorkspace.OpenConfiguration())
         }
     }
 }

@@ -401,6 +401,16 @@
         }
       }
     },
+    "Dateien senden …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send files …"
+          }
+        }
+      }
+    },
     "Dateien vom Handy automatisch annehmen": {
       "localizations": {
         "en": {

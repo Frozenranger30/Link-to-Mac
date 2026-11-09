@@ -50,6 +50,13 @@ struct MenuBarContent: View {
             }
 
             Group {
+                MenuButton(title: String(localized: "Dateien senden …"), symbol: "paperplane") {
+                    NSApp.activate(ignoringOtherApps: true)
+                    let panel = NSOpenPanel()
+                    panel.allowsMultipleSelection = true
+                    panel.canChooseDirectories = false
+                    if panel.runModal() == .OK { files.send(urls: panel.urls) }
+                }
                 MenuButton(title: String(localized: "Handy klingeln lassen"), symbol: "speaker.wave.3") { phone.ring() }
                 MenuButton(title: String(localized: "Bildschirm spiegeln"), symbol: "iphone.gen3") {
                     openWindow(id: "mirror")

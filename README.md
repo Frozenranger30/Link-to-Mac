@@ -64,6 +64,16 @@ Warum das so ist, steht in [docs/PROTOCOL.md](docs/PROTOCOL.md).
 - **Android:** `cd android && ./gradlew assembleDebug`
 - **Tests:** `./gradlew testDebugUnitTest` bzw. in Xcode ⌘U
 
+## Testen ohne Handy / ohne Mac
+
+- `tools/fake_phone.py` spielt ein Handy: Mac-App starten, *Handy koppeln* öffnen, dann
+  `python3 tools/fake_phone.py` ausführen und den QR-Inhalt per `nc 127.0.0.1 47899` hineinschicken
+  (oder einfach den automatischen Test in Xcode laufen lassen).
+- `tools/fake_mac.py` spielt einen Mac und prüft die Android-App (Kopplung, TLS, Anmeldung, Datei-Upload).
+- GitHub Actions führt beide Ende-zu-Ende-Tests bei jedem Push aus: die echte Mac-App gegen das
+  Fake-Handy (`Build Mac App`) und die echte Android-App im Emulator gegen den Fake-Mac
+  (`Android End-to-End Test`).
+
 ## Ideen für später
 
 - USB-/ADB-Profi-Spiegelung (wie scrcpy), MMS-Bilder in Nachrichten

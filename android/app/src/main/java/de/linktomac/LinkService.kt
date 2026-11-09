@@ -229,6 +229,15 @@ class LinkService : Service(), ControlConnection.Listener {
     }
 
     override fun onMessage(conn: ControlConnection, env: Envelope) {
+        // Input and clipboard events are cheap and order-sensitive: handle them on the reader thread.
+        if (env.type.startsWith("input.") || env.type == MsgType.CLIPBOARD_SET || env.type == MsgType.NOTIFICATION_REMOVED) {
+            try {
+                route(env)
+            } catch (e: Exception) {
+                Log.w(TAG, "route ${env.type} failed", e)
+            }
+            return
+        }
         scope.launch {
             try {
                 route(env)
